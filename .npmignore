@@ -33,7 +33,4 @@ node_modules
 .node_repl_history
 
 # IntelliJ
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/misc.xml
-.idea/jsLibraryMappings.xml
+.idea
