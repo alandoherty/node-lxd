@@ -100,6 +100,34 @@ var Client = utils.class_("Client", {
     },
 
     /**
+     * Creates a new container and starts it.
+     * @param {string} name
+     * @param {string} image
+     * @param {object?} config
+     * @param {string?} profile
+     * @param {function?} callback
+     * @returns {Operation}
+     */
+    launch: function(name, image, config, profile, callback) {
+        // callback
+        callback = arguments[arguments.length - 1];
+
+        // create and launch
+        return this.create(name, image, config, profile, function(err, container) {
+            if (err) {
+                callback(err);
+            } else {
+                container.start(function(err) {
+                   if (err)
+                       callback(err);
+                   else
+                       callback(null, container);
+                });
+            }
+        });
+    },
+
+    /**
      * Creates a new container.
      * @param {string} name
      * @param {string} image

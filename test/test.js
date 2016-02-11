@@ -12,23 +12,12 @@
 var index = require("../src/index");
 var client = index();
 
-/*
-client.create("myContainer", "ubuntu", function(err, container) {
+client.launch("myContainer", "ubuntu", function(err, container) {
     if (err) {
         console.error(err.getMessage());
     } else {
-        console.log("created " + container.name());
-        container.start(function(err) {
-            if (!err) {
-                console.log("started " + container.name());
-                container.ipv4(function(err, ipv4) {
-
-                });
-            }
+        container.ipv4(function(err, ipv4) {
+            console.log("started " + container.name() + "(" + ipv4 + ")");
         });
     }
-});*/
-
-client.info(function(err, info) {
-    console.log(info);
 });

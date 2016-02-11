@@ -48,6 +48,18 @@ client.create("container-name", "ubuntu", function(err, container) {
 });
 ```
 
+For simplicity, call `launch` to both create and start a container.
+
+```js
+client.launch("container-name", "ubuntu", function(err, container) {
+  if (err) {
+    console.error(err.getMessage());
+  } else {
+    console.log(container.name() + " started!");
+  }
+});
+```
+
 ### Get container
 
 To get a container by name, call `get` and pass the name of the container. If successful, container will be a `Container` object.
@@ -96,8 +108,7 @@ This returns an object of this format:
 {
     api_compat:1,
     auth:'trusted',
-    config:{
-    },
+    config:{ },
     environment:{
         addresses:[],
         architectures:[ 2, 1 ],
