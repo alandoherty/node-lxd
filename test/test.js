@@ -12,7 +12,7 @@
 var index = require("../src/index");
 var client = index();
 
-
+/*
 client.create("myContainer", "ubuntu", function(err, container) {
     if (err) {
         console.error(err.getMessage());
@@ -27,4 +27,8 @@ client.create("myContainer", "ubuntu", function(err, container) {
             }
         });
     }
-});
+});*/
+
+client.list(function(err, containers) {
+    console.log(containers);
+})

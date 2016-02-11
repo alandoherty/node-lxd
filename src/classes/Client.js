@@ -26,10 +26,18 @@ var Client = utils.class_("Client", {
 
     /**
      * Gets all containers.
+     * @param {boolean?} lazy
      * @param {function} callback
      * @returns {Container[]}
      */
-    list: function(callback) {
+    list: function(lazy, callback) {
+        // arguments
+        if (arguments.length == 1) {
+            callback = arguments[0];
+            lazy = false;
+        }
+
+        // request
         var client = this;
 
         this._request("GET /containers", {}, function(err, body) {
@@ -45,21 +53,25 @@ var Client = utils.class_("Client", {
                     var name = body[i].split("/");
                     name = name[name.length - 1];
 
-                    // queue get operation
-                    (function(name) {
-                        getQueue.queue(function (done) {
-                            client.get(name, function(err, container) {
-                                // push container, if we error we (assume) that the container
-                                // was deleted while downloading, so we don't break everything
-                                // by returning an error.
-                                if (!err)
-                                    containers.push(container);
+                    // queue get operation or push name if lazy
+                    if (lazy === true) {
+                        containers.push(name);
+                    } else {
+                        (function (name) {
+                            getQueue.queue(function (done) {
+                                client.get(name, function (err, container) {
+                                    // push container, if we error we (assume) that the container
+                                    // was deleted while downloading, so we don't break everything
+                                    // by returning an error.
+                                    if (!err)
+                                        containers.push(container);
 
-                                // done
-                                done();
+                                    // done
+                                    done();
+                                });
                             });
-                        });
-                    })(name);
+                        })(name);
+                    }
                 }
 
                 // execute queue
