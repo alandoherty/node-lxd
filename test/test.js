@@ -29,6 +29,6 @@ client.create("myContainer", "ubuntu", function(err, container) {
     }
 });*/
 
-client.list(function(err, containers) {
-    console.log(containers);
-})
+client.info(function(err, info) {
+    console.log(info);
+});

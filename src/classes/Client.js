@@ -152,8 +152,8 @@ var Client = utils.class_("Client", {
      * @param {function} callback
      */
     info: function(callback) {
-        this._request("GET /", {}, function(err, body, res) {
-            callback(err == null, body.metadata);
+        this._request("GET /", {}, function(err, body) {
+            callback(err, body);
         });
     },
 
