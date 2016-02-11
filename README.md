@@ -27,6 +27,6 @@ client.create("myContainer", "ubuntu", function(err, container) {
 
 ## Documentation ##
 
-The client class is documented [here](http://www.github.com/alandoherty/node-lxd/docs/client.md).
+The client class is documented [here](https://github.com/alandoherty/node-lxd/blob/master/docs/client.md).
 
-The container class is documented [here](http://www.github.com/alandoherty/node-lxd/docs/container.md).
+The container class is documented [here](https://github.com/alandoherty/node-lxd/blob/master/docs/container.md).

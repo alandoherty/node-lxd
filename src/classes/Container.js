@@ -26,6 +26,14 @@ var Container = utils.class_("Container", {
     _client: null,
 
     /**
+     * Gets the client this container is on.
+     * @returns {Client}
+     */
+    client: function() {
+        return this._client;
+    },
+
+    /**
      * Gets the metadata for this container.
      * @returns {object}
      */
@@ -117,7 +125,7 @@ var Container = utils.class_("Container", {
 
                     if (ipv4 == "") {
                         // maximum tries (10s)
-                        if (tries == 10) {
+                        if (tries == 15) {
                             callback(new Error("Exceeded retries"));
                             return;
                         }
@@ -205,7 +213,7 @@ var Container = utils.class_("Container", {
                 callback(err);
             } else {
                 container._metadata = metadata;
-                callback(err, this);
+                callback(err, container);
             }
         });
     },
@@ -327,11 +335,11 @@ var Container = utils.class_("Container", {
 
     /**
      * Downloads a file from the remote path on the container.
-     * @param {string} localPath
      * @param {string} remotePath
+     * @param {string} localPath
      * @param {function} callback
      */
-    downloadFile: function(localPath, remotePath, callback) {
+    downloadFile: function(remotePath, localPath, callback) {
 
     },
 
