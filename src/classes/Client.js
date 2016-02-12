@@ -11,18 +11,27 @@
 
 // requires
 var utils = require("../utils"),
+    url = require("url"),
     request = require("request"),
     Operation = require("./Operation"),
     OperationError = require("./OperationError"),
     Container = require("./Container"),
-    TaskQueue = require("./TaskQueue");
+    TaskQueue = require("./TaskQueue"),
+    Profile = require("./Profile");
 
 // client
 var Client = utils.class_("Client", {
     /**
      * The request.js path for the API.
+     * @internal
      */
     _path: "",
+
+    /**
+     * The web socket path for the API.
+     * @internal
+     */
+    _wsPath: "",
 
     /**
      * Gets all containers.
@@ -30,7 +39,7 @@ var Client = utils.class_("Client", {
      * @param {function} callback
      * @returns {Container[]}
      */
-    list: function(lazy, callback) {
+    containers: function(lazy, callback) {
         // arguments
         if (arguments.length == 1) {
             callback = arguments[0];
@@ -59,7 +68,7 @@ var Client = utils.class_("Client", {
                     } else {
                         (function (name) {
                             getQueue.queue(function (done) {
-                                client.get(name, function (err, container) {
+                                client.container(name, function (err, container) {
                                     // push container, if we error we (assume) that the container
                                     // was deleted while downloading, so we don't break everything
                                     // by returning an error.
@@ -87,14 +96,88 @@ var Client = utils.class_("Client", {
      * @param {string} name
      * @param {function} callback
      */
-    get: function(name, callback) {
+    container: function(name, callback) {
         var client = this;
 
-        client._request("GET /containers/" + name, {}, function(err, body) {
+        this._request("GET /containers/" + name, {}, function(err, body) {
             if (err) {
                 callback(err);
             } else {
                 callback(null, new Container(client, body));
+            }
+        });
+    },
+
+    /**
+     * Gets all profiles.
+     * @param {boolean?} lazy
+     * @param {function} callback
+     */
+    profiles: function(lazy, callback) {
+        // arguments
+        if (arguments.length == 1) {
+            callback = arguments[0];
+            lazy = false;
+        }
+
+        // request
+        var client = this;
+
+        this._request("GET /profiles", {}, function(err, body) {
+            if (err) {
+                callback(err);
+            } else {
+                // get queue
+                var getQueue = new TaskQueue();
+                var profiles = [];
+
+                for (var i = 0; i < body.length; i++) {
+                    // get profile name
+                    var name = body[i].split("/");
+                    name = name[name.length - 1];
+
+                    // queue get operation or push name if lazy
+                    if (lazy === true) {
+                        profiles.push(name);
+                    } else {
+                        (function (name) {
+                            getQueue.queue(function (done) {
+                                client.profile(name, function (err, profile) {
+                                    // push profile, if we error we (assume) that the profile
+                                    // was deleted while downloading, so we don't break everything
+                                    // by returning an error.
+                                    if (!err)
+                                        profiles.push(profile);
+
+                                    // done
+                                    done();
+                                });
+                            });
+                        })(name);
+                    }
+                }
+
+                // execute queue
+                getQueue.executeAll(function() {
+                    callback(null, profiles);
+                });
+            }
+        });
+    },
+
+    /**
+     * Gets a profile by the specified name.
+     * @param {string} name
+     * @param {function} callback
+     */
+    profile: function(name, callback) {
+        var client = this;
+
+        this._request("GET /profiles/" + name, {}, function(err, body) {
+            if (err) {
+                callback(err);
+            } else {
+                callback(null, new Profile(client, body));
             }
         });
     },
@@ -163,7 +246,7 @@ var Client = utils.class_("Client", {
             if (err) {
                 callback(err);
             } else {
-                client.get(name, function(err, container) {
+                client.container(name, function(err, container) {
                     if (err) {
                         callback(err);
                     } else {
@@ -189,11 +272,18 @@ var Client = utils.class_("Client", {
      * Performs a REST request on this client.
      * @param {string} path
      * @param {object} params
+     * @param {boolean?} wait
      * @param {function} callback
      * @returns {Operation}
      * @private
      */
-    _request: function(path, params, callback) {
+    _request: function(path, params, wait, callback) {
+        // wait optionality
+        if (arguments.length == 3) {
+            callback = arguments[2];
+            wait = true;
+        }
+
         // callback
         if (callback === undefined)
             callback = function() {};
@@ -219,7 +309,7 @@ var Client = utils.class_("Client", {
 
         // make request
         var client = this;
-        var operation = new Operation();
+        var operation = new Operation(this);
 
         request(options, function (error, response, body) {
             // log finished request
@@ -238,15 +328,19 @@ var Client = utils.class_("Client", {
                             operation._process(body);
 
                             // wait for operation
-                            client._request("GET /operations/" + body.metadata.id + "/wait", {}, function(err, body) {
-                                if (err !== null) {
-                                    callback(new OperationError("HTTP Error", "Failed", 400, error));
-                                } else if (body.status_code >= 400 && body.status_code <= 599) {
-                                    callback(new OperationError(body.err, body.status, body.status_code));
-                                } else {
-                                    callback(null, body);
-                                }
-                            });
+                            if (wait) {
+                                client._request("GET /operations/" + body.metadata.id + "/wait", {}, function (err, body) {
+                                    if (err !== null) {
+                                        callback(new OperationError("HTTP Error", "Failed", 400, error));
+                                    } else if (body.status_code >= 400 && body.status_code <= 599) {
+                                        callback(new OperationError(body.err, body.status, body.status_code));
+                                    } else {
+                                        callback(null, body);
+                                    }
+                                });
+                            } else {
+                                callback(null, operation);
+                            }
                         } else {
                             throw "async returned non-created status code";
                         }
@@ -274,6 +368,9 @@ var Client = utils.class_("Client", {
     constructor: function(host) {
         // path
         this._path = host === undefined ? "http://unix:/var/lib/lxd/unix.socket:/" : "http://" + host + "/";
+
+        // websocket path
+        this._wsPath = host === undefined ? "ws+unix:///var/lib/lxd/unix.socket/" : "ws://" + host + ":/";
 
         // variables
     }

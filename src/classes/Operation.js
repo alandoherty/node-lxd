@@ -10,24 +10,16 @@
  **/
 
 // requires
-var utils = require("../utils");
+var utils = require("../utils"),
+    WebSocket = require("ws"),
+    extend = require("util")._extend;
 
 // client
 var Operation = utils.class_("Operation", {
     /**
      * @private
      */
-    _type: "",
-
-    /**
-     * @private
-     */
-    _status: "",
-
-    /**
-     * @private
-     */
-    _statusCode: -1,
+    _client: null,
 
     /**
      * @private
@@ -37,35 +29,38 @@ var Operation = utils.class_("Operation", {
     /**
      * @private
      */
-    _id: "",
-
-    /**
-     * @private
-     */
     _metadata: {},
 
     /**
-     * Gets the type.
+     * Gets the id of the operation.
      * @returns {string}
      */
-    getType: function() {
-        return this._type;
+    id: function() {
+        return this._metadata.id;
+    },
+
+    /**
+     * Gets the class of operation.
+     * @returns {string}
+     */
+    class: function() {
+        return this._metadata.class;
     },
 
     /**
      * Gets the status or error.
      * @returns {string}
      */
-    getStatus: function() {
-        return this._status;
+    status: function() {
+        return this._metadata.status;
     },
 
     /**
      * Gets the status code.
      * @returns {number}
      */
-    getStatusCode: function() {
-        return this._statusCode;
+    statusCode: function() {
+        return this._metadata.status_code;
     },
 
     /**
@@ -77,6 +72,18 @@ var Operation = utils.class_("Operation", {
     },
 
     /**
+     * Connects to the websocket of this operation (if available).
+     * @returns {object|null}
+     */
+    webSocket: function() {
+        if (this.class() == "websocket") {
+            return new WebSocket(this._client._wsPath + "1.0/operations/" + this.id());
+        } else {
+            return null;
+        }
+    },
+
+    /**
      * Processes the JSON data into the operation.
      * @param {object} data
      * @internal
@@ -84,27 +91,17 @@ var Operation = utils.class_("Operation", {
     _process: function(data) {
         // type
         this._started = true;
-        this._type = data.type;
-
-        // get status info
-        this._status = data.status;
-        this._statusCode = data.status_code;
-
-        // id & metadata
-        this._id = data.metadata.id;
         this._metadata = data.metadata;
     },
 
     /**
      * Creates an operation.
+     * @param {Client} client
      */
-    constructor: function() {
+    constructor: function(client) {
+        this._client = client;
         this._started = false;
-        this._type = "";
-        this._status = "";
-        this._statusCode = 100;
         this._metadata = {};
-        this._id = "";
     }
 });
 

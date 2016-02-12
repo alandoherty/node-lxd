@@ -11,7 +11,7 @@
 
 var index = require("../src/index");
 var client = index();
-
+/*
 client.launch("myContainer", "ubuntu", function(err, container) {
     if (err) {
         console.error(err.getMessage());
@@ -20,4 +20,10 @@ client.launch("myContainer", "ubuntu", function(err, container) {
             console.log("started " + container.name() + "(" + ipv4 + ")");
         });
     }
+});*/
+
+client.container("myContainer", function(err, container) {
+   container.exec(["ls"], function(err) {
+
+   });
 });

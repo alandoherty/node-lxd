@@ -1,13 +1,14 @@
 {
   "name": "node-lxd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "src/index.js",
   "scripts": {
     "test": "test/test.js"
   },
   "dependencies" : {
-    "request" : "2.69.0"
+    "request" : "2.69.0",
+    "ws" : "1.0.1"
   },
   "author": "Alan Doherty <alan.fred.doherty@googlemail.com> (http://alandoherty.co.uk)",
   "license": "MIT"

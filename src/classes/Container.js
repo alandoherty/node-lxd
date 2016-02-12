@@ -59,6 +59,11 @@ var Container = utils.class_("Container", {
         if (name === undefined) {
             return this._metadata.name;
         } else {
+            // callback
+            if (callback === undefined)
+                callback = function(){};
+
+            // request
             var container = this;
 
             this._client._request("POST /containers/" + name, {name: name}, function(err, metadata) {
@@ -215,6 +220,34 @@ var Container = utils.class_("Container", {
                 container._metadata = metadata;
                 callback(err, container);
             }
+        });
+    },
+
+    /**
+     * Executes a command on the container.
+     * @param {string[]} command
+     * @param {object?} env
+     * @param {function} callback
+     */
+    exec: function(command, env, callback) {
+        // callback
+        callback = arguments[arguments.length - 1];
+
+        // environment
+        if (arguments.length == 2)
+            env = {};
+
+        // request
+        var container = this;
+
+        this._client._request("POST /containers/" + this.name() + "/exec", {
+            "command": command,
+            "environment": env,
+            "wait-for-websocket" : true,
+            "interactive" : true
+        }, false, function(err, operation) {
+            var ws = operation.webSocket();
+            console.log(ws);
         });
     },
 
