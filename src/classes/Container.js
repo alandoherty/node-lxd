@@ -246,8 +246,13 @@ var Container = utils.class_("Container", {
             "wait-for-websocket" : true,
             "interactive" : true
         }, false, function(err, operation) {
-            var ws = operation.webSocket();
-            console.log(ws);
+            operation.webSocket(function(err, ws) {
+                if (err) {
+                    callback(err);
+                } else {
+                    console.log("web socket connected");
+                }
+            });
         });
     },
 

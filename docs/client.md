@@ -92,7 +92,7 @@ client.containers(true, function(err, containers) {
 });
 ```
 
-### Info
+## Info
 
 To get information about the LXC instance the client is connected to, call `info`.
 

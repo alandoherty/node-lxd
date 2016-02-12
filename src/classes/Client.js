@@ -370,7 +370,7 @@ var Client = utils.class_("Client", {
         this._path = host === undefined ? "http://unix:/var/lib/lxd/unix.socket:/" : "http://" + host + "/";
 
         // websocket path
-        this._wsPath = host === undefined ? "ws+unix:///var/lib/lxd/unix.socket/" : "ws://" + host + ":/";
+        this._wsPath = host === undefined ? "ws+unix:///var/lib/lxd/unix.socket:/" : "ws://" + host + "/";
 
         // variables
     }

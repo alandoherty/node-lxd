@@ -8,7 +8,7 @@
   },
   "dependencies" : {
     "request" : "2.69.0",
-    "ws" : "1.0.1"
+    "ws-unix" : "1.0.2"
   },
   "author": "Alan Doherty <alan.fred.doherty@googlemail.com> (http://alandoherty.co.uk)",
   "license": "MIT"

@@ -11,7 +11,7 @@
 
 // requires
 var utils = require("../utils"),
-    WebSocket = require("ws"),
+    WebSocket = require("ws-unix"),
     extend = require("util")._extend;
 
 // client
@@ -73,12 +73,27 @@ var Operation = utils.class_("Operation", {
 
     /**
      * Connects to the websocket of this operation (if available).
+     * @param {function} callback
      * @returns {object|null}
      */
-    webSocket: function() {
+    webSocket: function(callback) {
         if (this.class() == "websocket") {
-            return new WebSocket(this._client._wsPath + "1.0/operations/" + this.id());
+            // try and connect
+            var secret = this._metadata.metadata.fds["0"];
+            var ws = new WebSocket(this._client._wsPath + "1.0/operations/" + this.id() + "/websocket?secret=" + secret);
+
+            // hook onto events
+            ws.on("error", function(err) {
+                callback(err);
+            });
+
+            ws.on("open", function() {
+                callback(null, ws);
+            });
+
+            return ws;
         } else {
+            callback(new Error("The operation is not of websocket class"));
             return null;
         }
     },
