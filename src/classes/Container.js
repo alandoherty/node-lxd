@@ -11,7 +11,9 @@
 
 // requires
 var utils = require("../utils"),
-    fs = require("fs");
+    fs = require("fs"),
+    Process = require("./Process"),
+    TaskQueue = require("./TaskQueue");
 
 // container
 var Container = utils.class_("Container", {
@@ -244,14 +246,36 @@ var Container = utils.class_("Container", {
             "command": command,
             "environment": env,
             "wait-for-websocket" : true,
-            "interactive" : true
+            "interactive" : false
         }, false, function(err, operation) {
-            operation.webSocket(function(err, ws) {
-                if (err) {
-                    callback(err);
-                } else {
-                    console.log("web socket connected");
-                }
+            // get metadata
+            var md = operation.metadata();
+
+            // socket connect queue
+            var wsQueue = new TaskQueue();
+            var ws = [];
+
+            for (var i = 0; i < 3; i++) {
+                (function(i) {
+                    wsQueue.queue(function(done) {
+                        operation.webSocket(md.metadata.fds[i.toString()], function (err, websocket) {
+                            if (err) {
+                                for (var j = 0; j < i; j++)
+                                    ws[j].close();
+
+                                callback(err);
+                            } else {
+                                ws[i] = websocket;
+                                done()
+                            }
+                        });
+                    });
+                })(i);
+            }
+
+            // execute
+            wsQueue.executeAll(function() {
+               callback(new Process(container, ws));
             });
         });
     },

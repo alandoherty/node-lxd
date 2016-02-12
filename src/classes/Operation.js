@@ -32,6 +32,14 @@ var Operation = utils.class_("Operation", {
     _metadata: {},
 
     /**
+     * Gets the metadata for this operation.
+     * @returns {object}
+     */
+    metadata: function() {
+        return this._metadata;
+    },
+
+    /**
      * Gets the id of the operation.
      * @returns {string}
      */
@@ -73,13 +81,13 @@ var Operation = utils.class_("Operation", {
 
     /**
      * Connects to the websocket of this operation (if available).
+     * @param {string} secret
      * @param {function} callback
      * @returns {object|null}
      */
-    webSocket: function(callback) {
+    webSocket: function(secret, callback) {
         if (this.class() == "websocket") {
             // try and connect
-            var secret = this._metadata.metadata.fds["0"];
             var ws = new WebSocket(this._client._wsPath + "1.0/operations/" + this.id() + "/websocket?secret=" + secret);
 
             // hook onto events

@@ -23,7 +23,7 @@ client.launch("myContainer", "ubuntu", function(err, container) {
 });*/
 
 client.container("myContainer", function(err, container) {
-   container.exec(["ls"], function(err) {
+   container.exec(["ls", "-/?."], function(err) {
 
    });
 });
