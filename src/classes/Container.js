@@ -13,7 +13,8 @@
 var utils = require("../utils"),
     fs = require("fs"),
     Process = require("./Process"),
-    TaskQueue = require("./utilities/TaskQueue");
+    TaskQueue = require("./utilities/TaskQueue"),
+    OperationError = require("./OperationError");
 
 // container
 var Container = utils.class_("Container", {
@@ -226,10 +227,48 @@ var Container = utils.class_("Container", {
     },
 
     /**
-     * Executes a command on the container.
-     * @param {string[]} command
-     * @param {object?} env
-     * @param {function} callback
+     * Executes a terminal command on the container
+     * @param {string[]} command The command with arguments.
+     * @param {object?} env The environment data, optional.
+     * @param {function} callback The callback.
+     */
+    run: function(command, env, callback) {
+        // get closure arguments
+        var _arguments = arguments;
+        var _callback = _arguments[_arguments.length - 1];
+
+        // our callback function
+        function __callback(err, process) {
+            // check for errors
+            if (err) {
+                _callback(err);
+                return;
+            }
+
+            // handle stdout/stderr
+            var stdOut = "";
+            var stdErr = "";
+
+            process.on("data", function(isErr, msg) {
+                if (isErr) stdErr += msg; else stdOut += msg;
+            });
+
+            // handle close
+            process.on("close", function() {
+               _callback(null, stdOut, stdErr);
+            });
+        }
+
+        // pass to exec function, but replace callback
+        _arguments[_arguments.length - 1] = __callback;
+        this.exec.apply(this, arguments);
+    },
+
+    /**
+     * Executes a terminal command on the container.
+     * @param {string[]} command The command with arguments.
+     * @param {object?} env The environment data, optional.
+     * @param {function} callback The callback.
      */
     exec: function(command, env, callback) {
         // callback
@@ -279,6 +318,8 @@ var Container = utils.class_("Container", {
             });
         });
     },
+
+
 
     /**
      * Gets the status or sets the state.
@@ -372,7 +413,14 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     upload: function(remotePath, data, callback) {
+        // convert data
+        if (Buffer.isBuffer(data))
+            data = data.toString("ascii");
 
+        // create operation
+        var operation = this._client._request("POST /containers/" + this.name() + "/files?path=" + remotePath, data, function(err, metadata) {
+            callback(err);
+        });
     },
 
     /**
@@ -382,7 +430,16 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     download: function(remotePath, callback) {
+        // container
+        var container = this;
 
+        // read the file
+        this._client._request("GET_RAW /containers/" + this.name() + "/files?path=" + remotePath, {}, function(err, metadata) {
+            if (err)
+                callback(err);
+            else
+                callback(null, metadata);
+        });
     },
 
     /**
@@ -392,7 +449,22 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     uploadFile: function(localPath, remotePath, callback) {
+        // container
+        var container = this;
 
+        // read the file
+        fs.readFile(localPath, {}, function(err, buff) {
+            // check for file error
+            if (err) {
+                callback(new OperationError("File Error", "Failed", 400, err));
+                return;
+            }
+
+            // uploads the file
+            container.upload(remotePath, buff, function(err) {
+                callback(err);
+            });
+        });
     },
 
     /**
@@ -402,7 +474,19 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     downloadFile: function(remotePath, localPath, callback) {
+        // container
+        var container = this;
 
+        // download
+        this.download(remotePath, function(err, data) {
+            // write to file
+            fs.writeFile(localPath, data, {}, function(err) {
+                if (err)
+                    callback(err);
+                else
+                    callback(null);
+            })
+        });
     },
 
     /**

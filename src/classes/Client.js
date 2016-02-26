@@ -298,12 +298,20 @@ var Client = utils.class_("Client", {
         if (process.env.LXDN_DEV == "true")
             console.log(method + " -> " + this._path + "1.0" + (route.length == 0 ? "" : "/") + route);
 
+        // check if we shouldn't parse JSON
+        var noJSONParse = false;
+
+        if (method.toLowerCase() == "get_raw") {
+            method = "GET";
+            noJSONParse = true;
+        }
+
         // request options
         var options = {
             url: this._path + "1.0" + (route.length == 0 ? "" : "/") + route,
             headers: { "Host" : "" }, // request normally sends weird lxc breaking host header, :?
             method: method,
-            json: true,
+            json: typeof(params) === "object",
             body: params
         };
 
@@ -311,16 +319,27 @@ var Client = utils.class_("Client", {
         var client = this;
         var operation = new Operation(this);
 
-        request(options, function (error, response, body) {
+        var requestRes = request(options, function (error, response, body) {
             // log finished request
             if (process.env.LXDN_DEV == "true")
                 (error == null ? console.log : console.error)
                     ((response == undefined ? "ERR" : response.statusCode) + " <- " + client._path + "1.0/" + route);
 
+            // parse body if not done already
+            if (typeof(body) == "string" && !noJSONParse)
+                body = JSON.parse(body);
+
             // callback
             if (error !== null) {
-                callback(new OperationError("HTTP Error", 400, error));
+                callback(new OperationError("HTTP Error", "Failed", 400, error));
             } else {
+                // handle raw data
+                if (typeof(body) !== "object") {
+                    callback(null, body);
+                    return;
+                }
+
+                // check type
                 switch (body.type) {
                     case "async":
                         if (body.status_code == 100) {

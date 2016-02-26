@@ -58,6 +58,20 @@ client.container("myContainer", function(err, container) {
 });
 ```
 
+If you don't require standard input functionality, the simplier `run` function may be more suitable for your needs. The parameters are identical to `exec`, but the callback function is called when either an error occurs or the program fully finishes. You should use stdErr to determine if a program exited cleanly as LXD does not provide environment exit codes.
+
+```js
+client.container("myContainer", function(err, container) {
+  container.exec(["echo", "node-lxd is easy to use"], function(err, stdOut, stdErr) {
+    if (err != null) console.error(err);
+    else {
+      console.log("stdOut: " + stdOut);
+      console.log("stdErr: " + stdErr);
+    }
+  });
+});
+```
+
 ## Files
 
 Uploading files to a container is done by calling either `upload` or `uploadFile`. The first takes a string or buffer as an argument, the latter takes a local path. Both functions require the remote path on the container where the file should be written.

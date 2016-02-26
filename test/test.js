@@ -23,14 +23,6 @@ client.launch("myContainer", "ubuntu", function(err, container) {
 });*/
 
 client.container("myContainer", function(err, container) {
-   container.exec(["sleep", "5"], function(err, process) {
-      process.resize(1, 1);
-      process.on("close", function() {
-         console.log("process closed");
-      });
-
-      process.on("data", function(isError, msg) {
-         (isError ? console.error : console.log)(msg);
-      });
+   container.downloadFile("/root/test.txt", "./test/download-test.txt", function(err) {
    });
 });
