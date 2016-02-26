@@ -13,7 +13,7 @@
 var utils = require("../utils"),
     fs = require("fs"),
     Process = require("./Process"),
-    TaskQueue = require("./TaskQueue");
+    TaskQueue = require("./utilities/TaskQueue");
 
 // container
 var Container = utils.class_("Container", {
@@ -255,10 +255,10 @@ var Container = utils.class_("Container", {
             var wsQueue = new TaskQueue();
             var ws = [];
 
-            for (var i = 0; i < 3; i++) {
+            for (var i = 0; i < 4; i++) {
                 (function(i) {
                     wsQueue.queue(function(done) {
-                        operation.webSocket(md.metadata.fds[i.toString()], function (err, websocket) {
+                        operation.webSocket(md.metadata.fds[(i == 3) ? "control" : i.toString()], function (err, websocket) {
                             if (err) {
                                 for (var j = 0; j < i; j++)
                                     ws[j].close();
@@ -266,7 +266,7 @@ var Container = utils.class_("Container", {
                                 callback(err);
                             } else {
                                 ws[i] = websocket;
-                                done()
+                                done();
                             }
                         });
                     });
@@ -275,7 +275,7 @@ var Container = utils.class_("Container", {
 
             // execute
             wsQueue.executeAll(function() {
-               callback(new Process(container, ws));
+               callback(null, new Process(container, ws));
             });
         });
     },

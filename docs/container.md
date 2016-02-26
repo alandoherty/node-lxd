@@ -39,14 +39,22 @@ container.freeze(function(err) {});
 container.unfreeze(function(err) {});
 ```
 
-## Deleting
+## Executing programs
 
-The container can be deleted by calling `delete` on the object.
+Executing programs is done by creating process objects, calling `exec` on a container. The first parameter is an array of argument values, the second is a callback to handle errors or accept the callback.
 
 ```js
-container.delete(function(err) {
-  if (err != null)
-    console.log(container.name() + " deleted!");
+client.container("myContainer", function(err, container) {
+  container.exec(["sleep", "5"], function(err, process) {
+    if (err != null) {
+      console.error(err);
+      return;
+    }
+
+    process.on("close", function() {
+       console.log("process closed");
+    });
+  });
 });
 ```
 
@@ -84,6 +92,16 @@ container.downloadFile("/root/myFile.txt", "myFile.txt", function(err) {
 });
 ```
 
+## Deleting
+
+The container can be deleted by calling `delete` on the object.
+
+```js
+container.delete(function(err) {
+  if (err != null)
+    console.log(container.name() + " deleted!");
+});
+```
 
 ## Network
 

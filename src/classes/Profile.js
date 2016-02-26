@@ -103,7 +103,6 @@ var Profile = utils.class_("Profile", {
     constructor: function(client, metadata) {
         this._client = client;
         this._metadata = metadata;
-        console.log(metadata);
     }
 });
 

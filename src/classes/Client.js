@@ -16,7 +16,7 @@ var utils = require("../utils"),
     Operation = require("./Operation"),
     OperationError = require("./OperationError"),
     Container = require("./Container"),
-    TaskQueue = require("./TaskQueue"),
+    TaskQueue = require("./utilities/TaskQueue"),
     Profile = require("./Profile");
 
 // client

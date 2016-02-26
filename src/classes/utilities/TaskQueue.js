@@ -9,7 +9,7 @@
  @license MIT
  **/
 
-var utils = require("../utils");
+var utils = require("../../utils");
 
 // export
 module.exports = utils.class_("TaskQueue", {
