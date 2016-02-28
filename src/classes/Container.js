@@ -398,8 +398,32 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     delete: function(callback) {
-        this._client._request("DELETE /containers/" + this.name(), {}, function(err, metadata) {
-            callback(err);
+        var deleteQueue = new TaskQueue();
+
+        // if running, stop first
+        var error = null;
+        var container = this;
+
+        if (this.state().status_code == 103) {
+            deleteQueue.queue(function(done) {
+                container.stop(function(err) {
+                    if (err !== null) error = err;
+                    done();
+                });
+            });
+        }
+
+        // actually delete the container
+        deleteQueue.queue(function(done) {
+            container._client._request("DELETE /containers/" + container.name(), {}, function (err, metadata) {
+                if (err !== null) error = err;
+                done();
+            });
+        });
+
+        // execute
+        deleteQueue.executeAll(function() {
+            callback(error);
         });
     },
 

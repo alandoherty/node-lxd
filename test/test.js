@@ -11,18 +11,16 @@
 
 var index = require("../src/index");
 var client = index();
-/*
+
 client.launch("myContainer", "ubuntu", function(err, container) {
     if (err) {
         console.error(err.getMessage());
     } else {
-        container.ipv4(function(err, ipv4) {
+        /*container.ipv4(function(err, ipv4) {
             console.log("started " + container.name() + "(" + ipv4 + ")");
-        });
+        });*/
+       container.delete(function(err) {
+          console.log(container.state());
+       });
     }
-});*/
-
-client.container("myContainer", function(err, container) {
-   container.downloadFile("/root/test.txt", "./test/download-test.txt", function(err) {
-   });
 });
