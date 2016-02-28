@@ -37,3 +37,6 @@ node_modules
 .idea/tasks.xml
 .idea/misc.xml
 .idea/jsLibraryMappings.xml
+
+# Test files (binary)
+test/*.zip

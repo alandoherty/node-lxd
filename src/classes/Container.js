@@ -435,10 +435,6 @@ var Container = utils.class_("Container", {
      * @param {function} callback
      */
     upload: function(remotePath, data, callback) {
-        // convert data
-        if (Buffer.isBuffer(data))
-            data = data.toString("ascii");
-
         // create operation
         var operation = this._client._request("POST /containers/" + this.name() + "/files?path=" + remotePath, data, function(err, metadata) {
             callback(err);
@@ -456,7 +452,7 @@ var Container = utils.class_("Container", {
         var container = this;
 
         // read the file
-        this._client._request("GET_RAW /containers/" + this.name() + "/files?path=" + remotePath, {}, function(err, metadata) {
+        this._client._request("GET_RAW /containers/" + this.name() + "/files?path=" + remotePath, "", function(err, metadata) {
             if (err)
                 callback(err);
             else

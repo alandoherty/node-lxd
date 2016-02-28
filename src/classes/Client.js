@@ -314,9 +314,13 @@ var Client = utils.class_("Client", {
             url: this._path + "1.0" + (route.length == 0 ? "" : "/") + route,
             headers: { "Host" : "" }, // request normally sends weird lxc breaking host header, :?
             method: method,
-            json: typeof(params) === "object",
+            json: typeof(params) === "object" && !Buffer.isBuffer(params),
             body: params
         };
+
+        // why
+        if (Buffer.isBuffer(params) || noJSONParse)
+            options.encoding = null;
 
         // make request
         var client = this;
@@ -328,6 +332,10 @@ var Client = utils.class_("Client", {
                 (error == null ? console.log : console.error)
                     ((response == undefined ? "ERR" : response.statusCode) + " <- " + client._path + "1.0/" + route);
 
+            // parse buffers
+            if (Buffer.isBuffer(body) && !noJSONParse)
+                body = body.toString("utf8");
+
             // parse body if not done already
             if (typeof(body) == "string" && !noJSONParse)
                 body = JSON.parse(body);
@@ -337,7 +345,7 @@ var Client = utils.class_("Client", {
                 callback(new OperationError("HTTP Error", "Failed", 400, error));
             } else {
                 // handle raw data
-                if (typeof(body) !== "object") {
+                if (typeof(body) !== "object" || (Buffer.isBuffer(body) && noJSONParse)) {
                     callback(null, body);
                     return;
                 }
@@ -375,6 +383,8 @@ var Client = utils.class_("Client", {
                         callback(new OperationError(body.error, body.error, body.error_code));
                         break;
                     default:
+                        if (process.env.LXDN_DEV)
+                            console.log(body);
                         throw "unknown operation type: " + body.type;
                 }
             }
