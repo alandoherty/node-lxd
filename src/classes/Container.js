@@ -318,7 +318,7 @@ var Container = utils.class_("Container", {
             });
         });
     },
-    
+
     /**
      * Gets the status or sets the state.
      * @param {string?} state

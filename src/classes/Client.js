@@ -201,10 +201,13 @@ var Client = utils.class_("Client", {
                 callback(err);
             } else {
                 container.start(function(err) {
-                   if (err)
-                       callback(err);
-                   else
+                   if (err) {
+                        container.delete(function() {
+                            callback(err);
+                        });
+                   } else {
                        callback(null, container);
+                   }
                 });
             }
         });
