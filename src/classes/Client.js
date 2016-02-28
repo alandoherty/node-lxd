@@ -85,7 +85,7 @@ var Client = utils.class_("Client", {
 
                 // execute queue
                 getQueue.executeAll(function() {
-                   callback(null, containers);
+                    callback(null, containers);
                 });
             }
         });
@@ -201,13 +201,13 @@ var Client = utils.class_("Client", {
                 callback(err);
             } else {
                 container.start(function(err) {
-                   if (err) {
+                    if (err) {
                         container.delete(function() {
                             callback(err);
                         });
-                   } else {
-                       callback(null, container);
-                   }
+                    } else {
+                        callback(null, container);
+                    }
                 });
             }
         });
@@ -330,7 +330,7 @@ var Client = utils.class_("Client", {
             // log finished request
             if (process.env.LXDN_DEV == "true")
                 (error == null ? console.log : console.error)
-                    ((response == undefined ? "ERR" : response.statusCode) + " <- " + client._path + "1.0/" + route);
+                ((response == undefined ? "ERR" : response.statusCode) + " <- " + client._path + "1.0/" + route);
 
             // parse buffers
             if (Buffer.isBuffer(body) && !noJSONParse)
@@ -345,9 +345,16 @@ var Client = utils.class_("Client", {
                 callback(new OperationError("HTTP Error", "Failed", 400, error));
             } else {
                 // handle raw data
-                if (typeof(body) !== "object" || (Buffer.isBuffer(body) && noJSONParse)) {
+                if (typeof(body) !== "object") {
                     callback(null, body);
                     return;
+                } else if (Buffer.isBuffer(body) && noJSONParse) {
+                    if (response.statusCode !== 200) {
+                        body = JSON.parse(body.toString("utf8"));
+                    } else {
+                        callback(null, body);
+                        return;
+                    }
                 }
 
                 // check type
