@@ -62,7 +62,7 @@ client.launch("container-name", "ubuntu", function(err, container) {
 
 ### Get container
 
-To get a container by name, call `get` and pass the name of the container. If successful, container will be a `Container` object.
+To get a container by name, call `container` and pass the name of the container. If successful, container will be a `Container` object.
 
 ```js
 client.container("container-name", function(err, container) {
@@ -72,7 +72,7 @@ client.container("container-name", function(err, container) {
 
 ### Get containers
 
-To list all the containers on an instance, call `list`. If you have more than five or ten containers, you should call this function lazily, which only downloads the names of the containers instead of their status.
+To list all the containers on an instance, call `containers`. If you have more than five or ten containers, you should call this function lazily, which only downloads the names of the containers instead of their status.
 
 ```js
 client.containers(function(err, containers) {
