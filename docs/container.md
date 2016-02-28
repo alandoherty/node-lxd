@@ -62,7 +62,7 @@ If you don't require standard input functionality, the simplier `run` function m
 
 ```js
 client.container("myContainer", function(err, container) {
-  container.exec(["echo", "node-lxd is easy to use"], function(err, stdOut, stdErr) {
+  container.run(["echo", "node-lxd is easy to use"], function(err, stdOut, stdErr) {
     if (err != null) console.error(err);
     else {
       console.log("stdOut: " + stdOut);
