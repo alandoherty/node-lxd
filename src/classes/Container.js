@@ -287,6 +287,12 @@ var Container = utils.class_("Container", {
             "wait-for-websocket" : true,
             "interactive" : false
         }, false, function(err, operation) {
+            // check for err
+            if (err) {
+                callback(err);
+                return;
+            }
+
             // get metadata
             var md = operation.metadata();
 
