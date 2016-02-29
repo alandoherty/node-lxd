@@ -61,7 +61,7 @@ var Process = utils.class_("Process", EventEmitter, {
      * @param {string|Buffer} data
      */
     write: function(data) {
-        this._stdIn.send(data);
+        this._stdIn.send(data, {binary: true});
     },
 
     /**
