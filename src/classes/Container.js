@@ -255,7 +255,9 @@ var Container = utils.class_("Container", {
 
             // handle close
             process.on("close", function() {
-               _callback(null, stdOut, stdErr);
+                setTimeout(function() {
+                    _callback(null, stdOut, stdErr);
+                }, 0);
             });
         }
 
