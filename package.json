@@ -1,6 +1,6 @@
 {
   "name": "node-lxd",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -10,6 +10,14 @@
     "request" : "2.69.0",
     "ws-unix" : "1.0.2"
   },
-  "author": "Alan Doherty <alan.fred.doherty@googlemail.com> (http://alandoherty.co.uk)",
-  "license": "MIT"
+  "author" : {
+    "name" : "Alan Doherty",
+    "email" : "alan@battlecrate.co.uk",
+    "url" : "https://www.battlecrate.co.uk/"
+  },
+  "license": "MIT",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/alandoherty/node-lxd.git"
+  }
 }

@@ -235,6 +235,15 @@ var Client = utils.class_("Client", {
         if (typeof(callback) !== "function")
             callback = function() { };
 
+        // check name length
+        if (name.length == 0) {
+            callback(new OperationError("Container name too small", "Failed", 400));
+            return null;
+        } else if (name.length > 64) {
+            callback(new OperationError("Container name too long", "Failed", 400));
+            return null;
+        }
+
         // request
         var client = this;
 
