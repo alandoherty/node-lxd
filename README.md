@@ -63,7 +63,7 @@ app.get("/run", function(req, res) {
 	});
 });
 
-app.listen(3000, function() {
+app.listen(3000, function(err) {
 	if (!err)
 		console.log("listening on port 3000");
 });
