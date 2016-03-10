@@ -47,21 +47,41 @@ var Process = utils.class_("Process", EventEmitter, {
     _pingTimer: null,
 
     /**
+     * @private
+     */
+    _closed: false,
+
+    /**
      * Closes the process.
      */
     close: function() {
         this._stdIn.close();
         this._stdOut.close();
-        this._stdErr.close();
+        if (this._stdErr !== null)
+            this._stdErr.close();
         this.emit("close");
+        this._closed = true;
+    },
+
+    /**
+     * Checks if the process is closed.
+     * @returns {boolean}
+     */
+    isClosed: function() {
+        return this._closed;
     },
 
     /**
      * Write some data to the process's standard input.
      * @param {string|Buffer} data
+     * @returns {boolean} If the data was written.
      */
     write: function(data) {
+        if (!this.isClosed())
+            return false;
+
         this._stdIn.send(data, {binary: true});
+        return true;
     },
 
     /**
@@ -84,12 +104,21 @@ var Process = utils.class_("Process", EventEmitter, {
      */
     constructor: function(container, webSockets) {
         this._container = container;
+        this._closed = false;
 
-        // web sockets
-        this._stdIn = webSockets[0];
-        this._stdOut = webSockets[1];
-        this._stdErr = webSockets[2];
-        this._control = webSockets[3];
+        // web sockets, if we have two it's interactive
+        // otherwise it's pty
+        if (webSockets.length == 2) {
+            this._stdIn = webSockets[0];
+            this._stdOut = webSockets[0];
+            this._stdErr = null;
+            this._control = webSockets[1];
+        } else {
+            this._stdIn = webSockets[0];
+            this._stdOut = webSockets[1];
+            this._stdErr = webSockets[2];
+            this._control = webSockets[3];
+        }
 
         // setup events
         var process = this;
@@ -104,9 +133,11 @@ var Process = utils.class_("Process", EventEmitter, {
             process.emit("data", false, a.toString("utf8").trim());
         });
 
-        this._stdErr.on("message", function(a, b, c) {
-            process.emit("data", true, a.toString("utf8").trim());
-        });
+        if (this._stdErr !== null) {
+            this._stdErr.on("message", function (a, b, c) {
+                process.emit("data", true, a.toString("utf8").trim());
+            });
+        }
     }
 });
 

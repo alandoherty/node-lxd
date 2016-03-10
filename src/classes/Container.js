@@ -269,25 +269,26 @@ var Container = utils.class_("Container", {
     /**
      * Executes a terminal command on the container.
      * @param {string[]} command The command with arguments.
-     * @param {object?} env The environment data, optional.
+     * @param {object?} options The options data, optional.
      * @param {function} callback The callback.
      */
-    exec: function(command, env, callback) {
+    exec: function(command, options, callback) {
         // callback
         callback = arguments[arguments.length - 1];
 
         // environment
         if (arguments.length == 2)
-            env = {};
+            options = {};
 
         // request
         var container = this;
+        var interactive = options.interactive || false;
 
         this._client._request("POST /containers/" + this.name() + "/exec", {
             "command": command,
-            "environment": env,
+            "environment": options.env || {},
             "wait-for-websocket" : true,
-            "interactive" : false
+            "interactive" : interactive
         }, false, function(err, operation) {
             // check for err
             if (err) {
@@ -302,10 +303,10 @@ var Container = utils.class_("Container", {
             var wsQueue = new TaskQueue();
             var ws = [];
 
-            for (var i = 0; i < 4; i++) {
+            for (var i = 0; i < (interactive == true ? 2 : 4); i++) {
                 (function(i) {
                     wsQueue.queue(function(done) {
-                        operation.webSocket(md.metadata.fds[(i == 3) ? "control" : i.toString()], function (err, websocket) {
+                        operation.webSocket(md.metadata.fds[(i == (interactive == true ? 1 : 3)) ? "control" : i.toString()], function (err, websocket) {
                             if (err) {
                                 for (var j = 0; j < i; j++)
                                     ws[j].close();

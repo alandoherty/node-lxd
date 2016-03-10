@@ -72,6 +72,20 @@ client.container("myContainer", function(err, container) {
 });
 ```
 
+If you need to run the command with interactive mode, pass options to either function.
+
+```js
+client.container("myContainer", function(err, container) {
+  container.run(["echo", "node-lxd is easy to use"], { interactive: true}, function(err, stdOut, stdErr) {
+    if (err != null) console.error(err);
+    else {
+      console.log("stdOut: " + stdOut);
+      console.log("stdErr: " + stdErr);
+    }
+  });
+});
+```
+
 ## Files
 
 Uploading files to a container is done by calling either `upload` or `uploadFile`. The first takes a string or buffer as an argument, the latter takes a local path. Both functions require the remote path on the container where the file should be written.

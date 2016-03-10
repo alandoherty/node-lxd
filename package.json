@@ -1,8 +1,21 @@
 {
   "name": "node-lxd",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "src/index.js",
+  "keywords" : [
+    "lxd",
+    "lxc",
+    "container",
+    "virtualization",
+    "node-lxd",
+    "cgroups",
+    "os",
+    "linux",
+    "simple",
+    "sandbox",
+    "isolation"
+  ],
   "scripts": {
     "test": "test/test.js"
   },
