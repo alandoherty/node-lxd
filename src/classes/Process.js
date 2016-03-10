@@ -77,7 +77,7 @@ var Process = utils.class_("Process", EventEmitter, {
      * @returns {boolean} If the data was written.
      */
     write: function(data) {
-        if (!this.isClosed())
+        if (this.isClosed())
             return false;
 
         this._stdIn.send(data, {binary: true});
