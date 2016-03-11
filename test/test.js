@@ -75,16 +75,14 @@ testQueue.queue(function(done) {
  * Local testing/remote testing
  */
 if (process.env.LXDN_DEV) {
-    client.container("test", function(err, container) {
-        container.exec(["echo", "wow"], {interactive: true}, function(err, proc) {
-            proc.on("close", function() {
-                console.log("closed");
-            })
-
-            proc.on("data", function(isErr, msg) {
-                console.log(isErr, msg);
-            });
-        });
+    client.launch("container-name", "ubuntu", {
+        "limits.memory" : "512MB"
+    }, function(err, container) {
+        if (err) {
+            console.error(err.getMessage());
+        } else {
+            console.log(container.name() + " started with 512MB (hard limit)!");
+        }
     });
 } else {
     testQueue.executeAll(function() {

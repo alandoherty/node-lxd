@@ -60,6 +60,20 @@ client.launch("container-name", "ubuntu", function(err, container) {
 });
 ```
 
+You can also pass standard LXD configuration by providing the configuration parameter to either `launch` or `create`.
+
+```js
+client.launch("container-name", "ubuntu", {
+  "limits.memory" : "512MB"
+}, function(err, container) {
+  if (err) {
+    console.error(err.getMessage());
+  } else {
+    console.log(container.name() + " started with 512MB (hard limit)!");
+  }
+});
+```
+
 ### Get container
 
 To get a container by name, call `container` and pass the name of the container. If successful, container will be a `Container` object.

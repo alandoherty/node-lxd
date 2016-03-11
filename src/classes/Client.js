@@ -195,6 +195,9 @@ var Client = utils.class_("Client", {
         // callback
         callback = arguments[arguments.length - 1];
 
+        if (arguments.length == 4)
+            profile = undefined;
+
         // create and launch
         return this.create(name, image, config, profile, function(err, container) {
             if (err) {
