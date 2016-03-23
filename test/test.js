@@ -21,9 +21,12 @@ var container = null;
 
 testQueue.queue(function(done) {
     console.log("[test] launching myContainer");
-    client.launch("myContainer", "ubuntu", function(err, container) {
+    client.launch("myContainer", "ubuntu", function(err, container_) {
         if (err)  console.error("[test] " + err.getMessage());
-        else done();
+        else {
+            container = container_;
+            done();
+        }
     });
 });
 
@@ -43,7 +46,7 @@ testQueue.queue(function(done) {
  */
 testQueue.queue(function(done) {
     console.log("[test] starting myContainer");
-    container.stop(function(err) {
+    container.start(function(err) {
         if (err)  console.error("[test] " + err.getMessage());
         else done();
     });
@@ -56,6 +59,37 @@ testQueue.queue(function(done) {
     console.log("[test] obtaining myContainer ipv4");
     container.ipv4(function(err, ipv4) {
         if (err) console.error("[test] " + err.getMessage());
+        else {
+            console.log("[test] obtained ipv4 of " + ipv4);
+            done();
+        }
+    });
+});
+
+/**
+ * Execute ls.
+ */
+testQueue.queue(function(done) {
+    console.log("[test] running 'ls'");
+    container.run(["ls", "/"], function(err, stdOut, stdErr) {
+        if (err) console.error("[test] " + err.getMessage());
+        else {
+            console.log("stdOut", stdOut);
+            console.error("stdErr", stdErr);
+            setTimeout(function() {
+                done();
+            }, 0);
+        }
+    });
+});
+
+/**
+ * Test stopping.
+ */
+testQueue.queue(function(done) {
+    console.log("[test] stopping myContainer");
+    container.stop(function(err) {
+        if (err)  console.error("[test] " + err.getMessage());
         else done();
     });
 });
@@ -75,17 +109,9 @@ testQueue.queue(function(done) {
  * Local testing/remote testing
  */
 if (process.env.LXDN_DEV) {
-    client.launch("container-name", "ubuntu", {
-        "limits.memory" : "512MB"
-    }, function(err, container) {
-        if (err) {
-            console.error(err.getMessage());
-        } else {
-            console.log(container.name() + " started with 512MB (hard limit)!");
-        }
-    });
-} else {
     testQueue.executeAll(function() {
         console.log("[test] all tests successful");
     });
+} else {
+
 }

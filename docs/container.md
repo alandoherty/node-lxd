@@ -80,7 +80,7 @@ client.container("myContainer", function(err, container) {
     if (err != null) console.error(err);
     else {
       console.log("stdOut: " + stdOut);
-      console.log("stdErr: " + stdErr);
+      console.log("stdErr: " + stdErr);i
     }
   });
 });
@@ -136,7 +136,7 @@ container.delete(function(err) {
 The network interface can be obtained by passing the interface name, and optionally a protocol to filter by.
 
 ```js
-var iface = container.ip("eth0", "IPv4");
+var iface = container.ip("eth0", "inet");
 
 if (iface != null)
   console.log(iface.address);

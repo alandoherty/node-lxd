@@ -34,6 +34,13 @@ var Client = utils.class_("Client", {
     _wsPath: "",
 
     /**
+     * The lxc info object, cached but not
+     * guaranteed to be populated.
+     * @internal
+     */
+    _info: {},
+
+    /**
      * Gets all containers.
      * @param {boolean?} lazy
      * @param {function} callback
@@ -226,14 +233,14 @@ var Client = utils.class_("Client", {
      * @returns {Operation}
      */
     create: function(name, image, config, profile, callback) {
+        // callback
+        callback = arguments[arguments.length - 1];
+
         // config
         if (config === undefined)
             config = {};
-        if (profile === undefined)
+        if (profile === undefined || arguments.length == 4)
             profile = "default";
-
-        // callback
-        callback = arguments[arguments.length - 1];
 
         if (typeof(callback) !== "function")
             callback = function() { };
@@ -252,7 +259,7 @@ var Client = utils.class_("Client", {
 
         return this._request("POST /containers", {
             "name": name,
-            "architecture": 2,
+            "architecture": "x86_64",
             "profiles": [profile],
             "ephemeral": false,
             "config": config,
@@ -278,7 +285,12 @@ var Client = utils.class_("Client", {
      * @param {function} callback
      */
     info: function(callback) {
+        var client = this;
+
         this._request("GET /", {}, function(err, body) {
+            if (!err)
+                client._info = body;
+
             callback(err, body);
         });
     },
@@ -312,6 +324,8 @@ var Client = utils.class_("Client", {
 
         if (process.env.LXDN_DEV == "true")
             console.log(method + " -> " + this._path + "1.0" + (route.length == 0 ? "" : "/") + route);
+        if (typeof(params) === "object" && !Buffer.isBuffer(params) && process.env.LXDN_DEV == "true")
+            console.log(JSON.stringify(params));
 
         // check if we shouldn't parse JSON
         var noJSONParse = false;
@@ -352,6 +366,10 @@ var Client = utils.class_("Client", {
             if (typeof(body) == "string" && !noJSONParse)
                 body = JSON.parse(body);
 
+            // log json response if available
+            if (typeof(body) === "object" && process.env.LXDN_DEV == "true")
+                console.log(JSON.stringify(body));
+
             // callback
             if (error !== null) {
                 callback(new OperationError("HTTP Error", "Failed", 400, error));
@@ -368,6 +386,7 @@ var Client = utils.class_("Client", {
                         return;
                     }
                 }
+
 
                 // check type
                 switch (body.type) {
@@ -422,6 +441,26 @@ var Client = utils.class_("Client", {
 
         // websocket path
         this._wsPath = host === undefined ? "ws+unix:///var/lib/lxd/unix.socket:/" : "ws://" + host + "/";
+
+        // cache the info, we don't really need it ASAP so we just let it naturally happen
+        // in the background
+        var client = this;
+
+        this.info(function(err, info) {
+            // populate if no error
+            if (!err)
+                client._info = info;
+
+            // debug info
+            if (process.env.LXDN_DEV) {
+                if (!err) {
+                    console.log("LXC " + info.environment.server_version + " on " + info.environment.kernel + " using " +
+                        info.environment.storage + " v" + info.environment.storage_version);
+                } else {
+                    console.log("failed to retrieve info from lxc");
+                }
+            }
+        });
     }
 });
 

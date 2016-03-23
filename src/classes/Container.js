@@ -88,14 +88,21 @@ var Container = utils.class_("Container", {
      */
     ip: function(interface_, protocol) {
         // check if ip's unavailable
-        if (this._metadata.status.ips === null)
+        if (!this._metadata.state.network)
+            return null;
+
+        // check if interface unavailable
+        if (!this._metadata.state.network[interface_])
             return null;
 
         // get ips
-        var ips =  this._metadata.status.ips;
+        var ips =  this._metadata.state.network[interface_].addresses;
 
         for (var i = 0; i < ips.length; i++) {
-            if (ips[i].interface == interface_ && (protocol === undefined || ips[i].protocol == protocol)) {
+            if (protocol !== undefined) {
+                if (ips[i].family === protocol)
+                    return ips[i];
+            } else {
                 return ips[i];
             }
         }
@@ -114,7 +121,7 @@ var Container = utils.class_("Container", {
             if (this._metadata.status.ips === null)
                 return "";
 
-            var ipv4 = this.ip("eth0", "IPV4");
+            var ipv4 = this.ip("eth0", "inet");
             return ipv4 == null ? "" : ipv4.address;
         } else {
             // check if we have it already
@@ -132,9 +139,9 @@ var Container = utils.class_("Container", {
                     var ipv4 = container.ipv4();
 
                     if (ipv4 == "") {
-                        // maximum tries (10s)
+                        // maximum tries (15s)
                         if (tries == 15) {
-                            callback(new Error("Exceeded retries"));
+                            callback(new OperationError("Exceeded retries", "Failed", 400));
                             return;
                         }
 
@@ -163,7 +170,7 @@ var Container = utils.class_("Container", {
             if (this._metadata.status.ips === null)
                 return "";
 
-            var ipv6 = this.ip("eth0", "IPV6");
+            var ipv6 = this.ip("eth0", "inet6");
             return ipv6 == null ? "" : ipv6.address;
         } else {
             // check if we have it already
@@ -221,7 +228,17 @@ var Container = utils.class_("Container", {
                 callback(err);
             } else {
                 container._metadata = metadata;
-                callback(err, container);
+
+                // we now have to a seperate query for state information
+                // which we use heavily
+                container._client._request("GET /containers/" + container._metadata.name + "/state", {}, function(err, metadata) {
+                    if (err) {
+                        callback(err);
+                    } else {
+                        container._metadata.state = metadata;
+                        callback(err, container);
+                    }
+                });
             }
         });
     },
@@ -257,7 +274,7 @@ var Container = utils.class_("Container", {
             process.on("close", function() {
                 setTimeout(function() {
                     _callback(null, stdOut, stdErr);
-                }, 0);
+                }, 10);
             });
         }
 
