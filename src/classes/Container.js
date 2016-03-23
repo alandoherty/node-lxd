@@ -354,7 +354,7 @@ var Container = utils.class_("Container", {
      */
     state: function(state, timeout, callback) {
         if (state === undefined) {
-            return this._metadata.status;
+            return this._metadata.state;
         } else {
             // callback
             if (callback === undefined)

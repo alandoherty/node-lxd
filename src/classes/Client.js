@@ -19,6 +19,9 @@ var utils = require("../utils"),
     TaskQueue = require("./utilities/TaskQueue"),
     Profile = require("./Profile");
 
+// the request id (for debugging)
+var requestId = 0;
+
 // client
 var Client = utils.class_("Client", {
     /**
@@ -328,8 +331,11 @@ var Client = utils.class_("Client", {
         if (route[0] == "/")
             route = route.substring(1);
 
+        // increment request id
+        requestId++;
+
         if (process.env.LXDN_DEV == "true")
-            console.log(method + " -> " + this._path + "1.0" + (route.length == 0 ? "" : "/") + route);
+            console.log(method + " (" + requestId + ") -> " + this._path + "1.0" + (route.length == 0 ? "" : "/") + route);
         if (typeof(params) === "object" && !Buffer.isBuffer(params) && process.env.LXDN_DEV == "true")
             console.log(JSON.stringify(params));
 
@@ -362,7 +368,7 @@ var Client = utils.class_("Client", {
             // log finished request
             if (process.env.LXDN_DEV == "true")
                 (error == null ? console.log : console.error)
-                ((response == undefined ? "ERR" : response.statusCode) + " <- " + client._path + "1.0/" + route);
+                ((response == undefined ? "ERR" : response.statusCode) + " (" + requestId + ") <- " + client._path + "1.0/" + route);
 
             // parse buffers
             if (Buffer.isBuffer(body) && !noJSONParse)
