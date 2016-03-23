@@ -110,7 +110,13 @@ var Client = utils.class_("Client", {
             if (err) {
                 callback(err);
             } else {
-                callback(null, new Container(client, body));
+                client._request("GET /containers/" + name + "/state", {}, function(err, state) {
+                    if (err) callback(err);
+                    else {
+                        body.state = state;
+                        callback(null, new Container(client, body));
+                    }
+                });
             }
         });
     },
