@@ -14,7 +14,225 @@ var utils = require("../utils"),
     fs = require("fs"),
     Process = require("./Process"),
     TaskQueue = require("./utilities/TaskQueue"),
-    OperationError = require("./OperationError");
+    OperationError = require("./OperationError"),
+    path_ = require("path");
+
+// file system
+var ContainerFS = utils.class_("ContainerFS", {
+    /**
+     * @private
+     */
+    _container: null,
+
+    /**
+     * @private
+     */
+    _base: "",
+
+    /**
+     * Gets or sets the base path.
+     * @param {string} base
+     */
+    base: function(base) {
+        if (this._base == undefined)
+            return this._base;
+        else
+            this._base = base;
+    },
+
+    /**
+     * Gets the parent container.
+     * @returns {Container}
+     */
+    container: function() {
+        return this._container;
+    },
+
+    chmod: function(path, mode, callback) {
+        return fs.chmod(this.resolve(path), mode, callback);
+    },
+
+    chmodSync: function(path, mode) {
+        return fs.chmodSync(this.resolve(path), mode, callback);
+    },
+
+    chown: function(path, uid, gid, callback) {
+        return fs.chown(this.resolve(path), uid, gid, callback);
+    },
+
+    chownSync: function(path, uid, gid) {
+        return fs.chownSync(this.resolve(path), uid, gid);
+    },
+
+    close: function(fd, callback) {
+        return fs.close(fd, callback);
+    },
+
+    closeSync: function(fd) {
+        return fs.closeSync(fd);
+    },
+
+    createReadStream: function(path, options) {
+        return fs.createReadStream(this.resolve(path), options);
+    },
+
+    createWriteStream: function(path, options) {
+        return fs.createWriteStream(this.resolve(path), options);
+    },
+
+    mkdir: function(path, mode, callback) {
+        return fs.mkdir(this.resolve(path), mode, callback);
+    },
+
+    mkdirSync: function(path, mode) {
+        return fs.mkdirSync(this.resolve(path), mode);
+    },
+
+    open: function(path, flags, mode, callback) {
+        return fs.open(this.resolve(path), flags, mode, callback);
+    },
+
+    openSync: function(path, flags, mode) {
+        return fs.openSync(this.resolve(path), flags, mode);
+    },
+
+    read: function(fd, buffer, offset, length, position, callback) {
+        return fs.read(fd, buffer, offset, length, position, callback);
+    },
+
+    readdir: function(path, options, callback) {
+        return fs.readdir(this.resolve(path), options, callback);
+    },
+
+    readdirSync: function(path, options) {
+        return fs.readdirSync(this.resolve(path), options);
+    },
+
+    readFile: function(file, options, callback) {
+        if (typeof file == "string")
+            return fs.readFile(this.resolve(file), options, callback);
+        else
+            return fs.readFile(file, options, callback);
+    },
+
+    readFileSync: function(file, options) {
+        if (typeof file == "string")
+            return fs.readFileSync(this.resolve(file), options);
+        else
+            return fs.readFileSync(file, options);
+    },
+
+    readlink: function(path, options, callback) {
+        return fs.readlink(this.resolve(path), options, callback);
+    },
+
+    readlinkSync: function(path, options) {
+        return fs.readlinkSync(this.resolve(path), options);
+    },
+
+    readSync: function(fd, buffer, offset, length, position) {
+        return fs.readSync(fd, buffer, offset, length, position);
+    },
+
+    realpath: function(path, options, callback) {
+        return fs.realpath(this.resolve(path), options, callback);
+    },
+
+    realpathSync: function(path, options) {
+        return fs.realpathSync(this.resolve(path), options);
+    },
+
+    rename: function(oldPath, newPath, callback) {
+        return fs.rename(this.resolve(oldPath), this.resolve(newPath), callback);
+    },
+
+    renameSync: function(oldPath, newPath) {
+        return fs.renameSync(this.resolve(oldPath), this.resolve(newPath));
+    },
+
+    rmdir: function(path, callback) {
+        return fs.rmdir(this.resolve(path), callback);
+    },
+
+    rmdirSync: function(path) {
+        return fs.rmdirSync(this.resolve(path));
+    },
+
+    stat: function(path, callback) {
+        return fs.stat(this.resolve(path), callback);
+    },
+
+    statSync: function(path) {
+        return fs.statSync(this.resolve(path), callback);
+    },
+
+    truncate: function(path, len, callback) {
+        return fs.truncate(this.resolve(path), len, callback);
+    },
+
+    truncateSync: function(path, len) {
+        return fs.truncateSync(this.resolve(path), len);
+    },
+
+    unlink: function(path, callback) {
+        return fs.unlink(this.resolve(path), callback);
+    },
+
+    unlinkSync: function(path) {
+        return fs.unlinkSync(this.resolve(path));
+    },
+
+    write: function(fd, buffer, offset, length, position, callback) {
+        return fs.write(fd, buffer, offset, length, position, callback);
+    },
+
+    writeFile: function(file, data, options, callback) {
+        if (typeof file == "string")
+            return fs.writeFile(this.resolve(file), data, options, callback);
+        else
+            return fs.writeFile(file, data, options, callback);
+    },
+
+    writeFileSync: function(file, data, options) {
+        if (typeof file == "string")
+            return fs.writeFileSync(this.resolve(file), data, options);
+        else
+            return fs.writeFileSync(file, data, options);
+    },
+
+    writeSync: function(fd, buffer, offset, length, position) {
+        return fs.writeSync(fd, buffer, offset, length, position);
+    },
+
+    /**
+     * Resolves an absolute container-relative path into an absolute system path.
+     * @param {string} path The path.
+     * @returns {string}
+     */
+    resolve: function(path) {
+        var root = "/var/lib/lxd/containers/" + this._container.name() + "/rootfs";
+
+        // add extra base
+        root = path_.join(root, this._base);
+
+        // prevent sneaky attacks
+        var joinedPath = path_.join(root, path);
+
+        if (joinedPath.substr(0, root.length) != root)
+            return root;
+        
+        return joinedPath;
+    },
+
+    /**
+     * Creates a new file system wrapper for a container.
+     * @param {Container} container
+     */
+    constructor: function(container) {
+        this._container = container;
+        this._base = "";
+    }
+});
 
 // container
 var Container = utils.class_("Container", {
@@ -27,6 +245,12 @@ var Container = utils.class_("Container", {
      * @private
      */
     _client: null,
+
+    /**
+     * The filesystem wrapper, local only.
+     * @public
+     */
+    fs: null,
 
     /**
      * Gets the client this container is on.
@@ -541,6 +765,9 @@ var Container = utils.class_("Container", {
     constructor: function(client, metadata) {
         this._client = client;
         this._metadata = metadata;
+
+        // file system wrapper is local only
+        this.fs = client.local() ? new ContainerFS(this) : null;
     }
 });
 

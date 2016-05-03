@@ -14,6 +14,8 @@ var client = index();
 var TaskQueue = require("../src/classes/utilities/TaskQueue");
 var testQueue = new TaskQueue();
 
+process.env.TEST = true;
+
 /**
  * Test launching.
  */
@@ -109,9 +111,11 @@ testQueue.queue(function(done) {
  * Local testing/remote testing
  */
 if (process.env.LXDN_DEV) {
+    client.container("crate-1", function(err, container) {
+        if (err) throw err;
+    })
+} else {
     testQueue.executeAll(function() {
         console.log("[test] all tests successful");
     });
-} else {
-
 }

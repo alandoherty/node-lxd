@@ -44,6 +44,19 @@ var Client = utils.class_("Client", {
     _info: {},
 
     /**
+     * @private
+     */
+    _local: false,
+
+    /**
+     * Gets if the client is local.
+     * @returns {boolean}
+     */
+    local: function() {
+        return this._local;
+    },
+
+    /**
      * Gets all containers.
      * @param {boolean?} lazy
      * @param {function} callback
@@ -448,6 +461,9 @@ var Client = utils.class_("Client", {
      * @param {string} host
      */
     constructor: function(host) {
+        // local
+        this._local = host === undefined;
+        
         // path
         this._path = host === undefined ? "http://unix:/var/lib/lxd/unix.socket:/" : "http://" + host + "/";
 

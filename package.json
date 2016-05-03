@@ -1,6 +1,6 @@
 {
   "name": "node-lxd",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A client for LXD container virtualisation",
   "main": "src/index.js",
   "keywords" : [
@@ -15,7 +15,7 @@
     "simple",
     "sandbox",
     "isolation",
-    "2.0.0.rc5"
+    "2.0.0"
   ],
   "scripts": {
     "test": "test/test.js"
