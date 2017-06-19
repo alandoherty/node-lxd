@@ -480,7 +480,7 @@ var Client = utils.class_('Client', {
   constructor: function(host) {
     var protocol, hostname, port;
     if (host) {
-      const hostUrl = url.parse(host);
+      var hostUrl = url.parse(host);
       protocol = hostUrl.protocol;
       hostname = hostUrl.hostname;
       port = hostUrl.port;
