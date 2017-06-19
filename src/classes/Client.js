@@ -461,6 +461,13 @@ var Client = utils.class_("Client", {
      * @param {string} host
      */
     constructor: function(host) {
+        const hostUrl = url.parse(apiEntry);
+        const protocol = hostUrl.protocol;
+        const host = hostUrl.host;
+        const port = hostUrl.port;
+        const pathname = hostUrl.pathname;
+        console.log(hostUrl);
+
         // local
         this._local = host === undefined;
         
