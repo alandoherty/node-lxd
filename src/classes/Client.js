@@ -466,7 +466,8 @@ var Client = utils.class_("Client", {
         const host = hostUrl.host;
         const port = hostUrl.port;
         const pathname = hostUrl.pathname;
-        console.log(hostUrl);
+        console.log('Client', hostUrl);
+
 
         // local
         this._local = host === undefined;
