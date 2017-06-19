@@ -11,11 +11,11 @@ var lxd = require("node-lxd");
 var client = lxd();
 ```
 
-To connect to a remote client, specify the host and port by passing it to the `node-lxd`.
+To connect to a remote client, specify the protocol (http || https), host and port by passing it to the `node-lxd`.
 
 ```js
 var lxd = require("node-lxd");
-var client = lxd("instance.mycompany.io:1234");
+var client = lxd("https://instance.mycompany.io:1234");
 ```
 
 ## Errors

@@ -1,16 +1,16 @@
 /**
-     __   _  __ ____
-    / /  | |/ // __ \
-   / /   |   // / / /
-  / /___/   |/ /_/ /
- /_____/_/|_/_____/
-
- @author Alan Doherty (BattleCrate Ltd.)
- @license MIT
- **/
+ *     __   _  __ ____
+ *    / /  | |/ // __ \
+ *   / /   |   // / / /
+ *  / /___/   |/ /_/ /
+ * /_____/_/|_/_____/
+ *
+ * @author Alan Doherty (BattleCrate Ltd.)
+ * @license MIT
+ */
 
 // requires
-var Client = require("./classes/Client");
+var Client = require('./classes/Client');
 
 /**
  * Creates a new client at the specified host, if none
@@ -19,7 +19,7 @@ var Client = require("./classes/Client");
  * @returns Client
  */
 function lxd(host) {
-    return new Client(host);
+  return new Client(host);
 }
 
 // exports
