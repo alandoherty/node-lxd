@@ -277,6 +277,22 @@ var Container = utils.class_('Container', {
   },
 
   /**
+   * Gets the ephemeral flag
+   * @returns {boolean}
+   */
+  ephemeral: function() {
+    return this._metadata.ephemeral;
+  },
+
+  /**
+   * Gets the stateful flag
+   * @returns {boolean}
+   */
+  stateful: function() {
+    return this._metadata.stateful;
+  },
+
+  /**
    * Gets the container name or sets the container name.
    * @param {string?} name
    * @param {function?} callback
