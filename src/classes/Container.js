@@ -1,13 +1,13 @@
 /**
- __   _  __ ____
- / /  | |/ // __ \
- / /   |   // / / /
- / /___/   |/ /_/ /
- /_____/_/|_/_____/
-
- @author Alan Doherty (BattleCrate Ltd.)
- @license MIT
- **/
+ *     __   _  __ ____
+ *    / /  | |/ // __ \
+ *   / /   |   // / / /
+ *  / /___/   |/ /_/ /
+ * /_____/_/|_/_____/
+ *
+ * @author Alan Doherty (BattleCrate Ltd.)
+ * @license MIT
+ */
 
 // requires
 var utils = require('../utils');
@@ -274,6 +274,30 @@ var Container = utils.class_('Container', {
    */
   architecture: function() {
     return this._metadata.architecture;
+  },
+
+  /**
+   * Gets the ephemeral flag
+   * @returns {boolean}
+   */
+  ephemeral: function() {
+    return this._metadata.ephemeral;
+  },
+
+  /**
+   * Gets the stateful flag
+   * @returns {boolean}
+   */
+  stateful: function() {
+    return this._metadata.stateful;
+  },
+
+  /**
+   * Gets the status (Running/Stopped)
+   * @returns {string}
+   */
+  status: function() {
+    return this._metadata.state.status;
   },
 
   /**
