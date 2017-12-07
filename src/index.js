@@ -17,7 +17,8 @@ var Client = require('./classes/Client');
  * is provided the client will use the local domain socket.
  * @param {string?} host
  * @param {object?} authentication
- * @param {string?} authentication.pem
+ * @param {string?} authentication.cert
+ * @param {string?} authentication.key
  * @param {string?} authentication.password
  * @returns Client
  */
