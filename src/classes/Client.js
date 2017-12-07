@@ -49,10 +49,25 @@ var Client = utils.class_('Client', {
   _local: false,
 
   /**
+   * @private
+   */
+  _cert: null,
+
+  /**
+   * @private
+   */
+  _key: null,
+
+  /**
+   * @private
+   */
+  _password: false,
+
+  /**
    * Gets if the client is local.
    * @returns {boolean}
    */
-  local: function() {
+  local: function () {
     return this._local;
   },
 
@@ -62,7 +77,7 @@ var Client = utils.class_('Client', {
    * @param {function} callback
    * @returns {Container[]}
    */
-  containers: function(lazy, callback) {
+  containers: function (lazy, callback) {
     // arguments
     if (arguments.length == 1) {
       callback = arguments[0];
@@ -72,7 +87,7 @@ var Client = utils.class_('Client', {
     // request
     var client = this;
 
-    this._request('GET /containers', {}, function(err, body) {
+    this._request('GET /containers', {}, function (err, body) {
       if (err) {
         callback(err);
       } else {
@@ -89,10 +104,10 @@ var Client = utils.class_('Client', {
           if (lazy === true) {
             containers.push(name);
           } else {
-            (function(name) {
-              getQueue.queue(function(done) {
+            (function (name) {
+              getQueue.queue(function (done) {
                 client.container(name,
-                  function(err, container) {
+                  function (err, container) {
                     // push container, if we error we (assume) that the container
                     // was deleted while downloading, so we don't break everything
                     // by returning an error.
@@ -108,7 +123,7 @@ var Client = utils.class_('Client', {
         }
 
         // execute queue
-        getQueue.executeAll(function() {
+        getQueue.executeAll(function () {
           callback(null, containers);
         });
       }
@@ -120,15 +135,15 @@ var Client = utils.class_('Client', {
    * @param {string} name
    * @param {function} callback
    */
-  container: function(name, callback) {
+  container: function (name, callback) {
     var client = this;
 
-    this._request('GET /containers/' + name, {}, function(err, body) {
+    this._request('GET /containers/' + name, {}, function (err, body) {
       if (err) {
         callback(err);
       } else {
         client._request('GET /containers/' + name + '/state', {},
-          function(err, state) {
+          function (err, state) {
             if (err) callback(err);
             else {
               body.state = state;
@@ -144,7 +159,7 @@ var Client = utils.class_('Client', {
    * @param {boolean?} lazy
    * @param {function} callback
    */
-  profiles: function(lazy, callback) {
+  profiles: function (lazy, callback) {
     // arguments
     if (arguments.length == 1) {
       callback = arguments[0];
@@ -154,7 +169,7 @@ var Client = utils.class_('Client', {
     // request
     var client = this;
 
-    this._request('GET /profiles', {}, function(err, body) {
+    this._request('GET /profiles', {}, function (err, body) {
       if (err) {
         callback(err);
       } else {
@@ -171,9 +186,9 @@ var Client = utils.class_('Client', {
           if (lazy === true) {
             profiles.push(name);
           } else {
-            (function(name) {
-              getQueue.queue(function(done) {
-                client.profile(name, function(err, profile) {
+            (function (name) {
+              getQueue.queue(function (done) {
+                client.profile(name, function (err, profile) {
                   // push profile, if we error we (assume) that the profile
                   // was deleted while downloading, so we don't break everything
                   // by returning an error.
@@ -189,7 +204,7 @@ var Client = utils.class_('Client', {
         }
 
         // execute queue
-        getQueue.executeAll(function() {
+        getQueue.executeAll(function () {
           callback(null, profiles);
         });
       }
@@ -201,16 +216,35 @@ var Client = utils.class_('Client', {
    * @param {string} name
    * @param {function} callback
    */
-  profile: function(name, callback) {
+  profile: function (name, callback) {
     var client = this;
 
-    this._request('GET /profiles/' + name, {}, function(err, body) {
+    this._request('GET /profiles/' + name, {}, function (err, body) {
       if (err) {
         callback(err);
       } else {
         callback(null, new Profile(client, body));
       }
     });
+  },
+
+  /**
+   * Authorizes certificate assigned to requests.
+   * @param {string} password
+   * @param {function} callback
+   */
+  authorizeCertificate: function (password, callback) {
+    this._request('POST /certificates', {
+        type: "client",
+        password
+      },
+      function (err) {
+        if (err) {
+          callback(err);
+        } else {
+          callback(null);
+        }
+      });
   },
 
   /**
@@ -222,7 +256,7 @@ var Client = utils.class_('Client', {
    * @param {function?} callback
    * @returns {Operation}
    */
-  launch: function(name, image, config, profile, callback) {
+  launch: function (name, image, config, profile, callback) {
     // callback
     callback = arguments[arguments.length - 1];
 
@@ -231,13 +265,13 @@ var Client = utils.class_('Client', {
 
     // create and launch
     return this.create(name, image, config, profile,
-      function(err, container) {
+      function (err, container) {
         if (err) {
           callback(err);
         } else {
-          container.start(function(err) {
+          container.start(function (err) {
             if (err) {
-              container.delete(function() {
+              container.delete(function () {
                 callback(err);
               });
             } else {
@@ -257,7 +291,7 @@ var Client = utils.class_('Client', {
    * @param {function?} callback
    * @returns {Operation}
    */
-  create: function(name, image, config, profile, callback) {
+  create: function (name, image, config, profile, callback) {
     // callback
     callback = arguments[arguments.length - 1];
 
@@ -267,8 +301,8 @@ var Client = utils.class_('Client', {
     if (profile === undefined || arguments.length == 4)
       profile = 'default';
 
-    if (typeof(callback) !== 'function')
-      callback = function() { };
+    if (typeof (callback) !== 'function')
+      callback = function () {};
 
     // check name length
     if (name.length == 0) {
@@ -290,12 +324,15 @@ var Client = utils.class_('Client', {
       'profiles': [profile],
       'ephemeral': false,
       'config': config,
-      'source': {'type': 'image', 'alias': image},
-    }, function(err, operation) {
+      'source': typeof image === 'string' ? {
+        'type': 'image',
+        'alias': image
+      } : image,
+    }, function (err, operation) {
       if (err) {
         callback(err);
       } else {
-        client.container(name, function(err, container) {
+        client.container(name, function (err, container) {
           if (err) {
             callback(err);
           } else {
@@ -311,10 +348,10 @@ var Client = utils.class_('Client', {
    * callback(err, info)
    * @param {function} callback
    */
-  info: function(callback) {
+  info: function (callback) {
     var client = this;
 
-    this._request('GET /', {}, function(err, body) {
+    this._request('GET /', {}, function (err, body) {
       if (!err)
         client._info = body;
 
@@ -331,7 +368,7 @@ var Client = utils.class_('Client', {
    * @returns {Operation}
    * @private
    */
-  _request: function(path, params, wait, callback) {
+  _request: function (path, params, wait, callback) {
     // wait optionality
     if (arguments.length == 3) {
       callback = arguments[2];
@@ -340,7 +377,7 @@ var Client = utils.class_('Client', {
 
     // callback
     if (callback === undefined)
-      callback = function() {};
+      callback = function () {};
 
     // parse path
     var route = path.substring(path.indexOf(' ') + 1).trim();
@@ -356,7 +393,7 @@ var Client = utils.class_('Client', {
       console.log(
         method + ' (' + requestId + ') -> ' + this._path + '1.0' +
         (route.length == 0 ? '' : '/') + route);
-    if (typeof(params) === 'object' && !Buffer.isBuffer(params) &&
+    if (typeof (params) === 'object' && !Buffer.isBuffer(params) &&
       process.env.LXDN_DEV == 'true')
       console.log(JSON.stringify(params));
 
@@ -371,11 +408,19 @@ var Client = utils.class_('Client', {
     // request options
     var options = {
       url: this._path + '1.0' + (route.length == 0 ? '' : '/') + route,
-      headers: {'Host': ''}, // request normally sends weird lxc breaking host header, :?
+      headers: {
+        'Host': ''
+      }, // request normally sends weird lxc breaking host header, :?
       method: method,
-      json: typeof(params) === 'object' && !Buffer.isBuffer(params),
+      json: typeof (params) === 'object' && !Buffer.isBuffer(params),
+      rejectUnauthorized: false,
       body: params,
     };
+
+    if (this._cert && this._key) {
+      options.cert = this._cert
+      options.key = this._key
+    }
 
     // why
     if (Buffer.isBuffer(params) || noJSONParse)
@@ -385,7 +430,7 @@ var Client = utils.class_('Client', {
     var client = this;
     var operation = new Operation(this);
 
-    var requestRes = request(options, function(error, response, body) {
+    var requestRes = request(options, function (error, response, body) {
       // log finished request
       if (process.env.LXDN_DEV == 'true')
         (error == null ? console.log : console.error)
@@ -397,11 +442,11 @@ var Client = utils.class_('Client', {
         body = body.toString('utf8');
 
       // parse body if not done already
-      if (typeof(body) == 'string' && !noJSONParse)
+      if (typeof (body) == 'string' && !noJSONParse)
         body = JSON.parse(body);
 
       // log json response if available
-      if (typeof(body) === 'object' && process.env.LXDN_DEV == 'true')
+      if (typeof (body) === 'object' && process.env.LXDN_DEV == 'true')
         console.log(JSON.stringify(body));
 
       // callback
@@ -409,7 +454,7 @@ var Client = utils.class_('Client', {
         callback(new OperationError('HTTP Error', 'Failed', 400, error));
       } else {
         // handle raw data
-        if (typeof(body) !== 'object') {
+        if (typeof (body) !== 'object') {
           callback(null, body);
           return;
         } else if (Buffer.isBuffer(body) && noJSONParse) {
@@ -477,7 +522,7 @@ var Client = utils.class_('Client', {
    * Creates a new LXD client.
    * @param {string} host
    */
-  constructor: function(host) {
+  constructor: function (host, authenticate) {
     var protocol, hostname, port;
     if (host) {
       var hostUrl = url.parse(host);
@@ -505,15 +550,27 @@ var Client = utils.class_('Client', {
       this._wsPath = 'ws+unix:///var/lib/lxd/unix.socket:/';
     }
 
+    if (authenticate && authenticate.cert && authenticate.key) {
+      this._cert = authenticate.cert
+      this._key = authenticate.key
+    }
+
     // cache the info, we don't really need it ASAP so we just let it naturally happen
     // in the background
     var client = this;
 
-    this.info(function(err, info) {
+    this.info(function (err, info) {
       // populate if no error
       if (!err)
         client._info = info;
 
+      if (!err && authenticate.cert) {
+        client.authorizeCertificate(authenticate.password, function (err) {
+          if (err && err._statusCode !== 400) {
+            console.error('failed to authorize certificate');
+          }
+        })
+      }
       // debug info
       if (process.env.LXDN_DEV) {
         if (!err) {

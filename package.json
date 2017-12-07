@@ -1,9 +1,9 @@
 {
   "name": "node-lxd",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A client for LXD container virtualisation",
   "main": "src/index.js",
-  "keywords" : [
+  "keywords": [
     "lxd",
     "lxc",
     "container",
@@ -20,18 +20,18 @@
   "scripts": {
     "test": "test/test.js"
   },
-  "dependencies" : {
-    "request" : "2.69.0",
-    "ws-unix" : "1.0.2"
+  "dependencies": {
+    "request": "2.69.0",
+    "ws-unix": "1.0.2"
   },
-  "author" : {
-    "name" : "Alan Doherty",
-    "email" : "alan@battlecrate.co.uk",
-    "url" : "https://www.battlecrate.co.uk/"
+  "author": {
+    "name": "Alan Doherty",
+    "email": "alan@battlecrate.co.uk",
+    "url": "https://www.battlecrate.co.uk/"
   },
   "license": "MIT",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/alandoherty/node-lxd.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alandoherty/node-lxd.git"
   }
 }
