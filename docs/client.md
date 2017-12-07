@@ -18,6 +18,16 @@ var lxd = require("node-lxd");
 var client = lxd("https://instance.mycompany.io:1234");
 ```
 
+You can also authenticate to your server with certificate and key:
+```js
+var lxd = require("node-lxd");
+var client = lxd("https://instance.mycompany.io:1234", {
+    cert: fs.readFileSync(__dirname + '/cert.pem'),
+    key: fs.readFileSync(__dirname + '/key.pem'),
+    password: 'password' // password to lxd server
+});
+```
+
 ## Errors
 
 Throughout the `node-lxd` docs, most callback functions will provide an err parameter. This is either `null` if no error occured, or an `OperationError` if the command failed. The client provides the error message and status information provided by `lxd`.
@@ -64,6 +74,27 @@ You can also pass standard LXD configuration by providing the configuration para
 
 ```js
 client.launch("container-name", "ubuntu", {
+  "limits.memory" : "512MB"
+}, function(err, container) {
+  if (err) {
+    console.error(err.getMessage());
+  } else {
+    console.log(container.name() + " started with 512MB (hard limit)!");
+  }
+});
+```
+
+It is also possible to pass own source according to lxd rest api:
+
+```js
+client.launch("container-name", {
+  "type": "image",                             // Can be: "image", "migration", "copy" or "none"
+  "mode": "pull",                              // One of "local" (default) or "pull"
+  "server": "https://10.0.2.3:8443",           // Remote server (pull mode only)
+  "protocol": "lxd",                           // Protocol (one of lxd or simplestreams, defaults to lxd)
+  "certificate": "PEM certificate",            // Optional PEM certificate. If not mentioned, system CA is used.
+  "alias": "ubuntu/devel"
+}, {
   "limits.memory" : "512MB"
 }, function(err, container) {
   if (err) {
