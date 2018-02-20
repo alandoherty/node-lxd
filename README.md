@@ -38,7 +38,7 @@ var app = express();
 
 var containers = {};
 
-app.get("/create", function(req, res) {
+app.post("/create", function(req, res) {
 	client.launch(req.query.name, function(err, container) {
 		if (err) res.json({success: false, message: err.getMessage()});
 		else {
@@ -48,7 +48,7 @@ app.get("/create", function(req, res) {
 	});
 });
 
-app.get("/run", function(req, res) {
+app.post("/run", function(req, res) {
 	if (!containers.hasOwnProperty(req.query.name)) {
 		res.json({success: false, message: "Container does not exist"});
 		return;
