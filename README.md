@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/node-lxd.svg)](https://badge.fury.io/js/node-lxd)
 
-A client for communicating with a local or remote instance of linux containers. The interface is object-oriented, simple and uniform.
+A client for communicating with a local or remote instance of linux containers. The interface is object-oriented, simple and uniform. Unrestrictive with an open MIT license.
 
 # Installing
 
@@ -74,3 +74,5 @@ app.listen(3000, function(err) {
 The client class is documented [here](https://github.com/alandoherty/node-lxd/blob/master/docs/client.md).
 
 The container class is documented [here](https://github.com/alandoherty/node-lxd/blob/master/docs/container.md).
+
+The process class is documented [here](https://github.com/alandoherty/node-lxd/blob/master/docs/process.md).
