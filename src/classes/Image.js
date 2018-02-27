@@ -64,6 +64,42 @@ var Image = utils.class_('Image', {
   },
 
   /**
+   * Gets the auto_update flag
+   * @returns {boolean}
+   */
+  auto_update: function () {
+    return this._metadata.auto_update;
+  },
+
+  /**
+   * Gets the public flag
+   */
+  public: function () {
+    return this._metadata.public;
+  },
+
+  /**
+   * Gets the image filename
+   */
+  filename: function() {
+    return this._metadata.filename;
+  },
+
+  /**
+   * Gets the source of the update
+   */
+  update_source: function() {
+    return this._metadata.update_source;
+  },
+
+  /**
+   * Gets the cached flag
+   */
+  cache: function() {
+    return this._metadata.cached;
+  },
+
+  /**
    * Gets the image fingerprint
    * @returns {string}
    */
@@ -77,7 +113,7 @@ var Image = utils.class_('Image', {
   refresh: function (callback) {
     var image = this;
     this._client._request('POST /images/' + this._metadata.fingerprint + '/refresh', {},
-      function(err, data) {
+      function (err, data) {
         if (err) {
           callback(err);
         } else {
@@ -86,8 +122,34 @@ var Image = utils.class_('Image', {
       });
   },
 
+
   /**
-   * Creates a new container.
+   * Delete the image.
+   * @param {function} callback
+   */
+  delete: function(callback) {
+    var deleteQueue = new TaskQueue();
+
+    var error = null;
+    var image = this;
+
+    // delete the image
+    deleteQueue.queue(function(done) {
+      image._client._request('DELETE /images/' + image.fingerprint(), {},
+        function(err, metadata) {
+          if (err !== null) error = err;
+          done();
+        });
+    });
+
+    // execute
+    deleteQueue.executeAll(function() {
+      callback(error);
+    });
+  },
+
+  /**
+   * Creates a new image.
    * @param {Client} client
    * @param {object} metadata
    */
