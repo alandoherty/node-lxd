@@ -72,6 +72,21 @@ var Image = utils.class_('Image', {
   },
 
   /**
+   * Refresh an image from its origin
+   */
+  refresh: function (callback) {
+    var image = this;
+    this._client._request('POST /images/' + this._metadata.fingerprint + '/refresh', {},
+      function(err, data) {
+        if (err) {
+          callback(err);
+        } else {
+          callback(null, data)
+        }
+      });
+  },
+
+  /**
    * Creates a new container.
    * @param {Client} client
    * @param {object} metadata
