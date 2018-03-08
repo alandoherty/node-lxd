@@ -564,7 +564,7 @@ var Client = utils.class_('Client', {
       if (!err)
         client._info = info;
 
-      if (!err && authenticate.cert) {
+      if (authenticate && !err && authenticate.cert) {
         client.authorizeCertificate(authenticate.password, function (err) {
           if (err && err._statusCode !== 400) {
             console.error('failed to authorize certificate');
