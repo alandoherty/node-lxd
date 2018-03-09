@@ -1,7 +1,7 @@
 {
   "name": "node-lxd",
   "version": "0.2.9",
-  "description": "A client for LXD container virtualisation",
+  "description": "A client for LXD container virtualization",
   "main": "src/index.js",
   "keywords": [
     "lxd",
@@ -21,7 +21,7 @@
     "test": "test/test.js"
   },
   "dependencies": {
-    "request": "2.69.0",
+    "request": "2.83.0",
     "ws-unix": "1.0.2"
   },
   "author": {
