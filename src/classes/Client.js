@@ -18,6 +18,7 @@ var OperationError = require('./OperationError');
 var Container = require('./Container');
 var TaskQueue = require('./utilities/TaskQueue');
 var Profile = require('./Profile');
+var Image = require('./Image');
 
 // the request id (for debugging)
 var requestId = 0;
@@ -69,6 +70,84 @@ var Client = utils.class_('Client', {
    */
   local: function () {
     return this._local;
+  },
+
+  /**
+   * Get all images
+   * @param {boolean?} lazy
+   * @param {function} callback
+   * @returns {Image[]}
+   */
+  images: function(lazy, callback) {
+    // arguments
+    if (arguments.length == 1) {
+      callback = arguments[0];
+      lazy = false;
+    }
+
+    // request
+    var client = this;
+
+    this._request('GET /images', {}, function (err, body) {
+      if (err) {
+        callback(err);
+      } else {
+        // get queue
+        var getQueue = new TaskQueue();
+        var images = [];
+
+        for (var i = 0; i < body.length; i++) {
+          // get image fingerprint
+          var fingerprint = body[i].split('/');
+          fingerprint = fingerprint[fingerprint.length - 1];
+
+          // queue get operation or push fingerprint if lazy
+          if (lazy === true) {
+            images.push(fingerprint);
+          } else {
+            (function (fingerprint) {
+              getQueue.queue(function (done) {
+                client.image(fingerprint,
+                  function (err, image) {
+                    // push image, if we error we (assume) that the image
+                    // was deleted while downloading, so we don't break everything
+                    // by returning an error.
+                    if (!err)
+                    images.push(image);
+
+                    // done
+                    done();
+                  });
+              });
+            })(fingerprint);
+          }
+        }
+
+        // execute queue
+        getQueue.executeAll(function () {
+          callback(null, images);
+        });
+      }
+
+    });
+  },
+
+
+  /**
+   * Gets an image with the specified name.
+   * @param {string} name
+   * @param {function} callback
+   */
+  image: function (fingerprint, callback) {
+    var client = this;
+
+    this._request('GET /images/' + fingerprint, {}, function (err, body) {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, new Image(client, body));
+      }
+    });
   },
 
   /**
