@@ -90,7 +90,7 @@ var Operation = utils.class_('Operation', {
       // try and connect
       var ws = new WebSocket(
         this._client._wsPath + '1.0/operations/' + this.id() +
-        '/websocket?secret=' + secret);
+        '/websocket?secret=' + secret, {rejectUnauthorized: false});
 
       // hook onto events
       ws.on('error', function(err) {
