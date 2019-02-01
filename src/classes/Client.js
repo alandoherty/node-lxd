@@ -544,7 +544,7 @@ var Client = utils.class_('Client', {
 
     // websocket path
     if (host) {
-      this._wsPath = 'ws://' + hostname;
+      this._wsPath = 'ws' + (authenticate ? 's' : '') + '://' + hostname;
       this._wsPath += port ? ':' + port + '/' : '/';
     } else {
       this._wsPath = 'ws+unix:///var/lib/lxd/unix.socket:/';
